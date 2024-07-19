@@ -1,0 +1,208 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model assistant {
+  id           Int      @id @default(autoincrement())
+  hotel_id     String   @db.VarChar
+  assistant_id String   @db.VarChar
+  added        DateTime @db.Timestamp(6)
+}
+
+model thread {
+  id           Int      @id @default(autoincrement())
+  user_id      String   @db.VarChar
+  added        DateTime @db.Timestamp(6)
+  thread_id    String   @db.VarChar
+  assistant_id String   @db.VarChar
+}
+
+model Wizard {
+  id                Int    @id @default(autoincrement())
+  hotel_information Json?
+  user_id           String @unique
+  User              User   @relation(fields: [user_id], references: [user_id])
+}
+
+model WebsiteBuilder {
+  id                          Int    @id @default(autoincrement())
+  website_builder_information Json?
+  user_id                     String @unique
+  User                        User   @relation(fields: [user_id], references: [user_id])
+}
+
+model AIFrontDeskWizard {
+  id                 Int    @id @default(autoincrement())
+  aIFrontDesk_wizard Json?
+  user_id            String @unique
+  User               User   @relation(fields: [user_id], references: [user_id])
+}
+
+model Reservation {
+  status         String?
+  user_id        String
+  booking_id     String?
+  booking_source String?
+  email          String?
+  end_date       DateTime?
+  guest_id       Int?
+  hotel_id       Int?
+  id             Int       @id @default(autoincrement())
+  name           String?
+  phone_number   String?
+  rate           Float?
+  reservation_id Int?
+  room_type      String?
+  start_date     DateTime?
+  User           User      @relation(fields: [user_id], references: [user_id])
+}
+
+model User {
+  first_name           String?
+  last_name            String?
+  user_id              String                @id @unique
+  email_id             String
+  role                 String                @default("user") @db.VarChar(255)
+  phone_number         String?
+  added                DateTime              @default(now())
+  address              String
+  bkng_title           String
+  bkng_hotelid         String // Booking.com hotel id 
+  bkng_ufi             String // Booking.com ufi
+  bkng_rating          Float?
+  bkng_link            String
+  bkng_hotelinfo       String
+  google_place_id      String?
+  num_rooms            Int?
+  aIFrontDeskWizard    AIFrontDeskWizard?
+  aIPricingPreferences AIPricingPreferences?
+  adCampaign           AdCampaign?
+  adsWizard            AdsWizard?
+  Chat                 Chat[]
+  CompetitorInfo       CompetitorInfo[]
+  rates                Rates[]
+  reservations         Reservation[]
+  websiteBuilder       WebsiteBuilder?
+  wizard               Wizard?
+  Candidate            Candidate[]
+}
+
+model AIPricingPreferences {
+  id                    Int    @id @default(autoincrement())
+  aIPricing_preferences Json?
+  user_id               String @unique
+  User                  User   @relation(fields: [user_id], references: [user_id])
+}
+
+model AdCampaign {
+  id          Int      @id @default(autoincrement())
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  dailySpend  Float
+  impressions Int
+  clicks      Int
+  revenue     Float
+  user_id     String   @unique
+  User        User     @relation(fields: [user_id], references: [user_id])
+}
+
+model AdsWizard {
+  id              Int    @id @default(autoincrement())
+  ads_information Json?
+  user_id         String @unique
+  User            User   @relation(fields: [user_id], references: [user_id])
+}
+
+model Rates {
+  price           Int?
+  added           DateTime    @default(now())
+  user_id         String
+  id              Int         @id @default(autoincrement())
+  room_type       String?
+  date            String
+  number_of_beds  Int?
+  writer          WriterType? @default(user)
+  number_of_rooms Int?
+  calendar        String?
+  User            User        @relation(fields: [user_id], references: [user_id])
+}
+
+model CompetitorInfo {
+  id                Int               @id @default(autoincrement())
+  thumbnail         String?
+  title             String
+  location          String
+  address           String
+  bkng_title        String
+  bkng_hotelid      String // Booking.com hotel id 
+  bkng_ufi          String // Booking.com ufi
+  bkng_rating       Float?
+  bkng_link         String
+  bkng_hotelinfo    String
+  ratingScore       Float
+  ratingDescription String            @default("")
+  reviews           Int
+  link              String
+  user_id           String
+  added             DateTime          @default(now())
+  importance        String            @default("medium")
+  page_name         String
+  User              User              @relation(fields: [user_id], references: [user_id])
+  CompetitorRates   CompetitorRates[]
+}
+
+model CompetitorRates {
+  id               Int            @id @default(autoincrement())
+  competitorInfoId Int
+  date             DateTime       @db.Date
+  rate             Float
+  people           Int
+  beds             Int
+  bed_type         String
+  added            DateTime       @default(now())
+  CompetitorInfo   CompetitorInfo @relation(fields: [competitorInfoId], references: [id])
+}
+
+model Chat {
+  id                     Int      @id @default(autoincrement())
+  client_message_unicode String
+  character_id           String
+  user_id                String
+  receiver_id            String
+  timestamp              DateTime
+  User                   User     @relation(fields: [character_id], references: [user_id])
+}
+
+enum WriterType {
+  user
+  ai
+}
+
+model Candidate {
+  id                 Int     @id @default(autoincrement())
+  avatar             String
+  full_name          String
+  email              String
+  city               String
+  salary             Float
+  age                String
+  experience         String
+  status             Int
+  current_role       String
+  hotel_name         String
+  user_id            String
+  email_sent         Boolean @default(false)
+  job_type           String
+  model_id           String
+  employment_history Json
+  cell_phone         String?
+  linkedin           String?
+  User               User    @relation(fields: [user_id], references: [user_id])
+}
